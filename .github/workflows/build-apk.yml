@@ -1,0 +1,102 @@
+name: Build OHLI TUNEL APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build OHLI TUNEL for Android Oreo+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout OHLI TUNEL source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Verify Java
+        run: java -version
+
+      - name: Checkout official Cloudflare cloudflared source
+        uses: actions/checkout@v4
+        with:
+          repository: cloudflare/cloudflared
+          ref: 2026.10.7
+          path: cloudflared-src
+
+      - name: Set up Go from cloudflared go.mod
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: cloudflared-src/go.mod
+          cache: true
+          cache-dependency-path: cloudflared-src/go.sum
+
+      - name: Build cloudflared binaries for supported Android CPU architectures
+        env:
+          CGO_ENABLED: '0'
+          CONTAINER_BUILD: '1'
+        run: |
+          mkdir -p \
+            "$GITHUB_WORKSPACE/app/src/main/jniLibs/arm64-v8a" \
+            "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a" \
+            "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86_64" \
+            "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86" \
+            "$GITHUB_WORKSPACE/app/src/main/assets"
+          cd cloudflared-src
+          GOOS=linux GOARCH=arm64 go build -mod=readonly -trimpath -ldflags='-s -w' -o "$GITHUB_WORKSPACE/app/src/main/jniLibs/arm64-v8a/libcloudflared.so" ./cmd/cloudflared
+          GOOS=linux GOARCH=arm GOARM=7 go build -mod=readonly -trimpath -ldflags='-s -w' -o "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a/libcloudflared.so" ./cmd/cloudflared
+          GOOS=linux GOARCH=amd64 go build -mod=readonly -trimpath -ldflags='-s -w' -o "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86_64/libcloudflared.so" ./cmd/cloudflared
+          GOOS=linux GOARCH=386 go build -mod=readonly -trimpath -ldflags='-s -w' -o "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86/libcloudflared.so" ./cmd/cloudflared
+          cp LICENSE "$GITHUB_WORKSPACE/app/src/main/assets/CLOUDFLARED-LICENSE.txt"
+          file "$GITHUB_WORKSPACE"/app/src/main/jniLibs/*/libcloudflared.so
+          test -s "$GITHUB_WORKSPACE/app/src/main/jniLibs/arm64-v8a/libcloudflared.so"
+          test -s "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a/libcloudflared.so"
+
+      - name: Add CA roots and patch Go DNS resolver path for Android
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ca-certificates
+          cp /etc/ssl/certs/ca-certificates.crt app/src/main/assets/cacert.pem
+          python3 - <<'PY'
+          from pathlib import Path
+          assets = Path('app/src/main/jniLibs')
+          old = b'/etc/resolv.conf'
+          new = b'//proc/self/fd/0'
+          for path in sorted(assets.glob('*/libcloudflared.so')):
+              data = path.read_bytes()
+              count = data.count(old)
+              if count < 1:
+                  raise SystemExit(f'Could not patch resolver path in {path.name}; stopping build')
+              path.write_bytes(data.replace(old, new))
+              path.chmod(0o755)
+              print(f'{path.parent.name}/{path.name}: patched {count} resolver reference(s), {path.stat().st_size} bytes')
+          PY
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build installable APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload OHLI TUNEL APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OHLI-TUNEL-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
