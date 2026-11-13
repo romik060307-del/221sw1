@@ -1,0 +1,10 @@
+VARIABEL YANG DISEDIAKAN DI /etc/ohli/ohli.env
+NODE_ENV=production
+HOST=127.0.0.1
+PORT=8080
+PUBLIC_URL=https://subdomain.duckdns.org
+UPLOAD_DIR=/var/lib/ohli/uploads
+DATABASE_URL=postgresql://...
+SESSION_SECRET=...
+
+Jangan salin rahasia dari file tersebut ke GitHub, screenshot, atau chat publik. Backend OHLI harus membaca nama variabel yang sesuai; installer tidak bisa menjamin aplikasi pihak ketiga otomatis menggunakannya.

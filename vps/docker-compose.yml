@@ -1,0 +1,26 @@
+name: ohli-tunel
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ohli-tunel
+    restart: unless-stopped
+    network_mode: host
+    init: true
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN in vps/.env}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

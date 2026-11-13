@@ -1,0 +1,13 @@
+OHLI TUNEL v2.1.0 (versionCode 5)
+Package: com.rk.tunnel
+Minimum Android: 8.0 Oreo / API 26
+Target SDK: 35
+Android connector mode: Cloudflare remotely managed Named Tunnel token; optional local-origin connector only
+Long-running Android service: foreground + START_STICKY + reconnect backoff
+Screen-off support: partial CPU wake lock + Wi-Fi lock while active
+Boot restore: optional BOOT_COMPLETED receiver, controlled by user setting
+Architectures: ARM64, ARMv7, x86_64, x86 (built by GitHub Actions)
+Executable packaging: ABI nativeLibraryDir payload embedded in APK (Android 10+ exec restriction aware)
+Production deployment: VPS Docker Compose connector bundle in /vps; run Node.js OHLI Social backend on VPS separately
+Build: GitHub Actions workflow .github/workflows/build-apk.yml
+Validation: source/config review completed; APK build and real-device/public-hostname tests remain required.

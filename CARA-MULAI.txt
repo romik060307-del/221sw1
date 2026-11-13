@@ -1,0 +1,29 @@
+OHLI TUNEL v2.1.0 — PRODUKSI VPS + ANDROID CONNECTOR
+
+PILIHAN UNTUK OHLI SOCIAL PRODUKSI
+Untuk website sosial/chat yang digunakan orang banyak, gunakan VPS Linux 24/7. Jangan menjadikan HP Android sebagai server inti. APK Android adalah konektor lokal/sekunder, bukan hosting permanen.
+
+A. DEPLOY PRODUKSI DI VPS
+1. Sediakan VPS Linux (disarankan Ubuntu 24.04 LTS) dan domain yang DNS-nya dikelola Cloudflare. VPS dan domain merupakan layanan terpisah yang dapat berbiaya.
+2. Pasang Docker Engine dan Docker Compose plugin: https://docs.docker.com/engine/install/ dan https://docs.docker.com/compose/install/linux/
+3. Pindahkan source backend OHLI Social yang sebenarnya ke VPS. Jalankan Node.js sebagai service systemd/container dan pastikan origin lokal aktif, contoh http://127.0.0.1:8080.
+4. Buat Named Tunnel di https://one.dash.cloudflare.com/ > Networks > Tunnels. Tambahkan Public Hostname seperti social.domainkamu.com dengan Service URL http://127.0.0.1:8080. Samakan port dengan Node.js.
+5. Salin token lewat Add a replica. Jangan bagikan token kepada siapa pun.
+6. Upload folder vps dari ZIP ke VPS, masuk ke folder itu, lalu jalankan: cp .env.example .env ; nano .env ; chmod 600 .env ; sudo bash install.sh
+7. Masukkan CLOUDFLARE_TUNNEL_TOKEN di file .env. Script akan mengambil dan menjalankan cloudflare/cloudflared dengan restart otomatis.
+8. Periksa status dengan bash status.sh. Uji domain dari jaringan seluler/perangkat lain. Reboot VPS dan pastikan layanan pulih.
+9. Lengkapi backup PostgreSQL dan media di penyimpanan terpisah sebelum memindahkan seluruh pengguna.
+
+B. ANDROID CONNECTOR (OPSIONAL)
+1. Build APK melalui GitHub Actions workflow Build OHLI TUNEL APK.
+2. Install hanya pada Android 8.0 Oreo atau lebih baru.
+3. Mode Android hanya meneruskan origin lokal dari HP. Untuk produksi, jangan gunakan token Named Tunnel yang sama pada HP jika VPS sudah memakai token tersebut dengan origin berbeda.
+
+C. PENTING
+- Named Tunnel memberi hostname tetap. VPS yang menjalankan backend membuat layanan tidak bergantung pada HP.
+- Tunnel tidak meng-host backend. Source Node.js OHLI Social harus dipindahkan/dijalankan terpisah pada VPS.
+- Arsip sumber yang diberikan hanya berisi aplikasi tunnel Android, bukan source backend OHLI Social, database, atau file media. Karena itu migrasi situs lengkap belum dapat dilakukan dari ZIP ini saja.
+- Satu VPS pun masih bisa mengalami gangguan. Backup, monitoring, update keamanan, dan rencana VPS kedua dibutuhkan untuk keandalan lebih tinggi.
+- Tidak ada hosting yang dijamin hidup selamanya tanpa gangguan.
+
+Lihat vps/README-ID.md untuk panduan lengkap, systemd template, perintah pengelolaan, dan rencana high availability.

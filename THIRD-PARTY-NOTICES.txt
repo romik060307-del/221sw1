@@ -1,0 +1,3 @@
+Source Android OHLI TUNEL dari paket yang tersedia sebelumnya disertakan sebagai opsional.
+Untuk server produksi pada VPS, aplikasi Android ini tidak diperlukan agar server tetap aktif. Jangan gunakan Quick Tunnel dari Android sebagai infrastruktur utama bagi OHLI Social jika targetnya layanan 24 jam.
+APK final tidak dibangun atau diuji sebagai bagian dari paket server v3.0.0.

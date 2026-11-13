@@ -1,0 +1,34 @@
+STATUS DAN BATASAN — OHLI TUNEL FREE SERVER PACK v3.0.0
+
+APA YANG PAKET INI LAKUKAN
+1. Menyiapkan Ubuntu sebagai server.
+2. Memasang Node.js 24, PostgreSQL, Caddy, dan DuckDNS updater.
+3. Menjaga service Node.js dengan systemd (restart otomatis jika crash/reboot).
+4. Menyediakan HTTPS dan reverse proxy pada domain DuckDNS.
+5. Menyediakan folder upload persisten serta backup database/upload lokal.
+6. Menyediakan starter page dengan health endpoint sebelum backend asli dipasang.
+
+APA YANG TIDAK DILAKUKAN
+1. Tidak membuat akun Oracle atau DuckDNS.
+2. Tidak membuat VM atau membuka security rules di dashboard Oracle.
+3. Tidak menyalin source OHLI Social karena source tersebut tidak ada di berkas yang diberikan pada percakapan ini.
+4. Tidak memindahkan akun, tabel, password, chat history, foto, atau video dari server lama.
+5. Tidak menjamin layanan bebas henti selamanya.
+6. Tidak membangun APK final dalam paket ini.
+
+SYARAT AGAR PUBLIC HTTPS BERHASIL
+- VM memiliki public IPv4 yang dapat diakses dari internet.
+- Security List/NSG Oracle membuka TCP 80 dan 443 dari internet.
+- DuckDNS menunjuk ke IPv4 VM.
+- Caddy dapat bind ke port 80 dan 443.
+- Tidak ada proxy lain yang mengambil port 80/443.
+
+KEAMANAN
+- PostgreSQL hanya listen pada localhost; jangan buka 5432 ke internet.
+- Node app bind ke 127.0.0.1:8080; publik hanya lewat Caddy HTTPS.
+- SSH sebaiknya dibatasi hanya ke IP admin.
+- Rahasia disimpan di /etc/ohli/ohli.env dengan permission 600.
+- Backup yang hanya disimpan di VM yang sama tidak cukup untuk pemulihan bila VM hilang. Salin /var/backups/ohli ke PC atau storage lain.
+
+CATATAN ORACLE ALWAYS FREE
+Limit dan kebijakan dapat berubah. Selalu periksa label Always Free pada console dan halaman resmi Oracle saat membuat resource. Instance Always Free yang dianggap idle dapat direbut kembali menurut ketentuan Oracle. Karena itu paket ini cocok untuk biaya minimal/percobaan produksi skala kecil, bukan SLA komersial.

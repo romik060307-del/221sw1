@@ -1,0 +1,30 @@
+# TEMPLATE SAJA: sesuaikan WorkingDirectory, User, ExecStart, dan EnvironmentFile
+# dengan backend Node.js OHLI Social milikmu sebelum memasangnya.
+[Unit]
+Description=OHLI Social Node.js Backend
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=ohli
+Group=ohli
+WorkingDirectory=/opt/ohli-social
+Environment=NODE_ENV=production
+Environment=PORT=8080
+# Aktifkan baris ini jika konfigurasi rahasia disimpan di file terpisah:
+# EnvironmentFile=/etc/ohli-social.env
+ExecStart=/usr/bin/node /opt/ohli-social/server.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+# Buat direktori ini terlebih dahulu dan sesuaikan dengan lokasi upload/data aplikasi.
+ReadWritePaths=/var/lib/ohli-social /var/lib/ohli-social/uploads
+
+[Install]
+WantedBy=multi-user.target
